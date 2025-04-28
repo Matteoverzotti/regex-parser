@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Token {
     Char(char),
     Union,      // |
@@ -44,4 +44,49 @@ pub fn tokenize(regex: &str) -> Vec<Token> {
     }
 
     tokens
+}
+
+fn precedence(token: &Token) -> u8 {
+    match token {
+        Token::Star | Token::Plus | Token::Question => 3,
+        Token::Concat => 2,
+        Token::Union => 1,
+        _ => 0,
+    }
+}
+
+pub fn to_postfix(tokens: Vec<Token>) -> Vec<Token> {
+    let mut output = Vec::new();
+    let mut stack = Vec::new();
+
+    for token in tokens {
+        match token {
+            Token::Char(_) => output.push(token),
+            Token::LeftParen => stack.push(token),
+            Token::RightParen => {
+                while let Some(top) = stack.pop() {
+                    if top == Token::LeftParen {
+                        break;
+                    }
+                    output.push(top);
+                }
+            }
+            _ => {
+                while let Some(top) = stack.last() {
+                    if precedence(&top) >= precedence(&token) {
+                        output.push(stack.pop().unwrap());
+                    } else {
+                        break;
+                    }
+                }
+                stack.push(token);
+            }
+        }
+    }
+
+    while let Some(top) = stack.pop() {
+        output.push(top);
+    }
+
+    output
 }
