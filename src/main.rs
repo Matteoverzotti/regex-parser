@@ -1,23 +1,57 @@
 mod helper;
-use helper::parser;
-
 mod nfa;
 mod dfa;
+mod testing;
+
+use std::fs;
+use serde_json::from_str;
+use helper::parser;
+use testing::{RegexTestSuite, SingleTest};
 
 fn main() {
-    let regex = "a(bc)*d(e|f(g|h))*";
-    let tokens = parser::tokenize(regex);
-    println!("Tokens: {:?}", tokens);
+    let file: String = fs::read_to_string("regex_tests.json")
+        .expect("Unable to read file");
+    let tests: Vec<RegexTestSuite> = from_str(&file)
+        .expect("JSON was not well-formatted");
 
-    let postfix = parser::to_postfix(tokens);
-    println!("Postfix: {:?}", postfix);
+    let mut total: i32 = 0;
+    let mut failures: i32 = 0;
 
-    let nfa = parser::build_nfa(postfix);
-    // nfa.visualize();
+    for test in tests {
+        println!("\n=== Test suite {}: `{}` ===", test.name, test.regex);
 
-    let dfa = nfa.to_dfa();
-    println!("DFA: {:?}", dfa);
-    // dfa.visualize();
+        // build the DFA once per suite
+        let tokens: Vec<parser::Token>  = parser::tokenize(&test.regex);
+        let tokens: Vec<parser::Token> = parser::to_postfix(tokens);
+        let nfa: nfa::NFA = parser::build_nfa(tokens);
+        let dfa: dfa::DFA = nfa.to_dfa();
 
-    println!("{}", dfa.accepts_word("adfg"))
+        for SingleTest { input, expected } in &test.test_strings {
+            total += 1;
+            let result = dfa.accepts_word(input);
+            if result != *expected {
+                failures += 1;
+                println!(
+                    "  ❌ [FAIL] Input: {:<10} | Expected: {:<5} | Got: {}",
+                    format!("\"{}\"", input),
+                    expected,
+                    result
+                );
+            } else {
+                println!(
+                    "  ✅ [PASS] Input: {:<10} | Result matches expected: {}",
+                    format!("\"{}\"", input),
+                    result
+                );
+            }
+        }
+        println!();
+    }
+
+    println!("\nRan {} tests: {} passed, {} failed\n",
+             total, total - failures, failures);
+
+    if failures > 0 {
+        std::process::exit(1);
+    }
 }
