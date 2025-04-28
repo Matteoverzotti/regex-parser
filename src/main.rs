@@ -26,6 +26,11 @@ fn main() {
         let nfa: nfa::NFA = parser::build_nfa(tokens);
         let dfa: dfa::DFA = nfa.to_dfa();
 
+        if test.visualize {
+            nfa.visualize();
+            dfa.visualize();
+        }
+
         for SingleTest { input, expected } in &test.test_strings {
             total += 1;
             let result = dfa.accepts_word(input);

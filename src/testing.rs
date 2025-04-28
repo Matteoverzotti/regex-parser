@@ -4,6 +4,7 @@ use serde::Deserialize;
 pub struct RegexTestSuite {
     pub name: String,
     pub regex: String,
+    pub visualize: bool,
     pub test_strings: Vec<SingleTest>,
 }
 
