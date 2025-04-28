@@ -1,5 +1,5 @@
 mod helper;
-use helper::parser;
+use helper::{parser, thompson};
 
 mod nfa;
 use nfa::NFA;
@@ -12,11 +12,13 @@ fn main() {
     let postfix = parser::to_postfix(tokens);
     println!("Postfix: {:?}", postfix);
 
-    let mut nfa: NFA = NFA::from_char('\0');
-    nfa.visualize();
+    let nfa1: NFA = NFA::from_char('\0');
+    nfa1.visualize();
 
-    nfa = NFA::from_char('y');
-    nfa = nfa.rename_states(2);
+    let nfa2 = NFA::from_char('y');
+    nfa2.visualize();
 
-    nfa.visualize();
+    let nfa3 = thompson::concat(nfa1, nfa2);
+    let nfa4 = thompson::concat(nfa3.clone(), nfa3.clone());
+    nfa4.visualize();
 }
