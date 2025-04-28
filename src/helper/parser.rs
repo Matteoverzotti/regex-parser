@@ -90,3 +90,56 @@ pub fn to_postfix(tokens: Vec<Token>) -> Vec<Token> {
 
     output
 }
+
+use core::panic;
+
+use crate::nfa::NFA;
+use crate::helper::thompson;
+
+pub fn build_nfa(tokens: Vec<Token>) -> NFA {
+    let mut stack = Vec::new();
+
+    for token in tokens {
+        match token {
+            Token::Char(c) => {
+                let nfa = NFA::from_char(c);
+                stack.push(nfa);
+            }
+            Token::Union => {
+                let nfa2 = stack.pop().unwrap();
+                let nfa1 = stack.pop().unwrap();
+                let nfa = thompson::union(nfa1, nfa2);
+                stack.push(nfa);
+            }
+            Token::Star => {
+                let nfa = stack.pop().unwrap();
+                let nfa = thompson::star(nfa);
+                stack.push(nfa);
+            }
+            Token::Plus => {
+                // a+ = a* a
+                let nfa = stack.pop().unwrap();
+                let nfa_clone = nfa.clone();
+                let nfa_clone = thompson::star(nfa_clone);
+                let nfa = thompson::concat(nfa, nfa_clone);
+                stack.push(nfa);
+            }
+            Token::Question => {
+                // a? = a* | ε
+                let nfa = stack.pop().unwrap();
+                let epsilon_nfa = NFA::from_char('\0');
+                let nfa = thompson::union(nfa, epsilon_nfa);
+                stack.push(nfa);
+            }
+            Token::Concat => {
+                let nfa2 = stack.pop().unwrap();
+                let nfa1 = stack.pop().unwrap();
+                let nfa = thompson::concat(nfa1, nfa2);
+                stack.push(nfa);
+            }
+            _ => panic!("Unexpected token: {:?}", token),
+        }
+    }
+
+    stack.pop().unwrap()
+}
