@@ -2,9 +2,10 @@ mod helper;
 use helper::parser;
 
 mod nfa;
+mod dfa;
 
 fn main() {
-    let regex = "a(a+b)*b";
+    let regex = "a(bc)*d(e|f(g|h))*";
     let tokens = parser::tokenize(regex);
     println!("Tokens: {:?}", tokens);
 
@@ -13,4 +14,8 @@ fn main() {
 
     let nfa = parser::build_nfa(postfix);
     nfa.visualize();
+
+    let dfa = nfa.to_dfa();
+    println!("DFA: {:?}", dfa);
+    dfa.visualize();
 }
