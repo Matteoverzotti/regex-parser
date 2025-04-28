@@ -48,17 +48,9 @@ impl NFA {
     pub fn visualize(&self) {
         let mut dot_path = temp_dir();
         let mut png_path = temp_dir();
-        dot_path.push("nfa.dot");
-        png_path.push("nfa.png");
-
-        if dot_path.exists() {
-            std::fs::remove_file(&dot_path)
-                .expect("Failed to remove existing dot file");
-        }
-        if png_path.exists() {
-            std::fs::remove_file(&png_path)
-                .expect("Failed to remove existing png file");
-        }
+        let random_number: u32 = rand::random();
+        dot_path.push(format!("nfa_{}.dot", random_number));
+        png_path.push(format!("nfa_{}.png", random_number));
 
         self.write_dot_file(&dot_path);
         Command::new("dot")
