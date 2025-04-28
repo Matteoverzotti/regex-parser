@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet, VecDeque};
 use crate::nfa::NFA;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct DFA {
     pub sigma: Vec<char>,
     pub states: Vec<Vec<String>>,
@@ -109,46 +109,17 @@ impl NFA {
     }
 }
 
-// impl DFA {
-//     pub fn check_validity(&self) -> bool {
-//         // I know that theoretically, the DFA should have at most one initial state
-//         // So q0 should just be a &str
-//         // But that made the validation logic more complicated
-//         // So I'm just going to keep it as a Vec<&str> for now
-//         if self.0.q0.len() != 1 {
-//             return false;
-//         }
+impl DFA {
+    pub fn accepts_word(&self, word: &str) -> bool {
+        let mut current_state: Vec<String> = self.q0.clone();
+        for symbol in word.chars() {
+            match self.transitions.get(&current_state)
+                .and_then(|map| map.get(&symbol)) {
+                None => return false,
+                Some(next_state) => current_state = next_state.clone(),
+            };
+        }
 
-//         for (state, transitions) in self.transitions.iter() {
-//             if !self.states.contains(state) {
-//                 return false;
-//             }
-
-//             for (symbol, next_state) in transitions {
-//                 // This check isn't in the requirements but I added it anyways
-//                 // Bonus points? :D
-//                 if next_state.len() != 1 {
-//                     return false;
-//                 }
-
-//                 if !self.sigma.contains(&symbol) || !self.states.contains(&next_state[0]) {
-//                     return false;
-//                 }
-//             }
-//         }
-//         true
-//     }
-
-//     pub fn accepts_word(&self, word: &str) -> bool {
-//         let mut current_state = self.q0[0];
-//         for symbol in word.chars() {
-//             match self.transitions.get(current_state)
-//                 .and_then(|map| map.get(&symbol)) {
-//                 None => return false,
-//                 Some(next_state) => current_state = &next_state[0],
-//             };
-//         }
-
-//         self.final_states.contains(&current_state)
-//     }
-// }
+        self.final_states.iter().any(|final_state| final_state == &current_state)
+    }
+}

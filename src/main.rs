@@ -13,9 +13,11 @@ fn main() {
     println!("Postfix: {:?}", postfix);
 
     let nfa = parser::build_nfa(postfix);
-    nfa.visualize();
+    // nfa.visualize();
 
     let dfa = nfa.to_dfa();
     println!("DFA: {:?}", dfa);
-    dfa.visualize();
+    // dfa.visualize();
+
+    println!("{}", dfa.accepts_word("adfg"))
 }

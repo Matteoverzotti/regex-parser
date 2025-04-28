@@ -1,5 +1,5 @@
 use crate::nfa::NFA;
-use std::{collections::HashMap, fmt::format};
+use std::collections::HashMap;
 
 pub fn concat(nfa1: NFA, mut nfa2: NFA) -> NFA {
     let mut transitions = nfa1.transitions.clone();
