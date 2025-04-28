@@ -12,9 +12,13 @@ fn main() {
     let postfix = parser::to_postfix(tokens);
     println!("Postfix: {:?}", postfix);
 
-    let nfa = NFA::from_char('a');
-    println!("NFA: {:?}", nfa);
+    let nfa: NFA = NFA::from_char('\0');
+    nfa.visualize();
 
-    let nfa = nfa.rename_states(1);
-    println!("NFA: {:?}", nfa);
+    // nfa = NFA::from_char('y');
+    // nfa = nfa.rename_states(2);
+
+    // nfa.visualize();
+
+
 }
